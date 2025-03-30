@@ -6,12 +6,18 @@ from tqdm import tqdm
 import lightkurve as lk
 import sqlite3
 import multiprocessing
+import os
+
+# Ensure the directory exists
+os.environ["MPLCONFIGDIR"] = "/tmp/matplotlib"
+os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
 
 
 TEST_MODE = False  # Set to False for full processing
 TEST_LIMIT = 10 if TEST_MODE else None
 SSD_CACHE_DIR = "/mnt/data/TCEs_LCs"  # Replace with your SSD path
 MAX_WORKERS = 8
+
 
 # Configure lightkurve cache directory to SSD
 lk.conf.cache_dir = SSD_CACHE_DIR
