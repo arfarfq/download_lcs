@@ -18,7 +18,7 @@ logging.basicConfig(
 
 TEST_MODE = False  # Set to False for full processing
 TEST_LIMIT = 10 if TEST_MODE else None
-SSD_CACHE_DIR = "/Users/samirhaffegee/TCEs_LCs"  # Replace with your SSD path
+SSD_CACHE_DIR = "/mnt/data/TCEs_LCs"  # Replace with your SSD path
 MAX_WORKERS = 8
 
 # Configure lightkurve cache directory to SSD
