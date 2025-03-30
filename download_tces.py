@@ -124,6 +124,7 @@ def main():
     except KeyboardInterrupt:
 
     except Exception as e:
+        None
 
     finally:
         conn.close()
