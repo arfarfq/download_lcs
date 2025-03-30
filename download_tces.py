@@ -122,7 +122,7 @@ def main():
 
 
     except KeyboardInterrupt:
-
+        None
     except Exception as e:
         None
 
