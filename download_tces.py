@@ -30,7 +30,7 @@ logging.info(f"Lightkurve cache set to {SSD_CACHE_DIR}")
 def get_exo_tic_sectors():
     """Load TIC IDs and sectors of exoplanet hosts from CSV file."""
     try:
-        df = pd.read_csv("tces.csv")
+        df = pd.read_csv("/mnt/data/tces.csv")
         tic_sectors = list(zip(df['tic_id'], df['Sectors']))
         tic_sectors = [(tic, sectors) for tic, sectors in tic_sectors]
         return tic_sectors
@@ -75,7 +75,7 @@ def worker(task):
 def main():
     try:
         # Set up SQLite database
-        conn = sqlite3.connect('tce_database.db')
+        conn = sqlite3.connect('/mnt/data/tce_database.db')
         cursor = conn.cursor()
 
         # Create LightCurves table with unique constraint on (TIC, sector)
@@ -91,7 +91,7 @@ def main():
         conn.commit()
 
         # Load TOI features from "tois.csv" and populate TOIs table
-        df_tois = pd.read_csv("tces.csv")
+        df_tois = pd.read_csv("/mnt/data/tces.csv")
         features = [col for col in df_tois.columns if col != 'Sectors']
         df_tois = df_tois[features]
         df_tois.to_sql('TOIs', conn, if_exists='replace', index=False)
