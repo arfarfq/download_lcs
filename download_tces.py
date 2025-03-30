@@ -1,4 +1,3 @@
-import logging
 import os
 import pandas as pd
 import ast
@@ -8,13 +7,6 @@ import lightkurve as lk
 import sqlite3
 import multiprocessing
 
-# Set up logging
-logging.basicConfig(
-    filename='processing.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
 TEST_MODE = False  # Set to False for full processing
 TEST_LIMIT = 10 if TEST_MODE else None
@@ -25,7 +17,7 @@ MAX_WORKERS = 8
 lk.conf.cache_dir = SSD_CACHE_DIR
 if not os.path.exists(SSD_CACHE_DIR):
     os.makedirs(SSD_CACHE_DIR)
-logging.info(f"Lightkurve cache set to {SSD_CACHE_DIR}")
+
 
 def get_exo_tic_sectors():
     """Load TIC IDs and sectors of exoplanet hosts from CSV file."""
@@ -35,7 +27,6 @@ def get_exo_tic_sectors():
         tic_sectors = [(tic, sectors) for tic, sectors in tic_sectors]
         return tic_sectors
     except Exception as e:
-        logging.error(f"Error loading exo TIC sectors: {e}", exc_info=True)
         return []
 
 def download_tess_data(tic, sector, max_retries=3):
@@ -43,20 +34,20 @@ def download_tess_data(tic, sector, max_retries=3):
         try:
             search = lk.search_lightcurve(f"TIC {tic}", sector=sector)
             if len(search) == 0:
-                logging.info(f"No data found for TIC {tic} sector {sector}")
+
                 return None
             lc = search.download()
-            logging.info(f"Downloaded TIC {tic} sector {sector} to cache")
+
             return lc
         except (ConnectionError, TimeoutError) as e:
-            logging.warning(f"Attempt {attempt+1}/{max_retries} failed for TIC {tic} sector {sector}: {e}")
+
             if attempt < max_retries - 1:
                 sleep_time = 3 * (attempt + 1)
                 time.sleep(sleep_time)
         except Exception as e:
-            logging.error(f"Permanent error for TIC {tic} sector {sector}: {e}")
+
             return None
-    logging.error(f"All download attempts failed for TIC {tic} sector {sector}")
+
     return None
 
 def worker(task):
@@ -69,7 +60,7 @@ def worker(task):
             return (tic, sector, file_path)
         return None
     except Exception as e:
-        logging.error(f"Error in worker for TIC {tic} sector {sector}: {e}")
+
         return None
 
 def main():
@@ -105,7 +96,6 @@ def main():
         # Prepare tasks for parallel processing
         tasks = [(tic, sectors) for tic, sectors in test_exo if sectors is not None]
 
-        logging.info(f"Starting parallel processing of {len(tasks)} tasks with {MAX_WORKERS} workers...")
 
         # Use multiprocessing Pool with 8 workers
         with multiprocessing.Pool(processes=MAX_WORKERS) as pool:
@@ -126,16 +116,15 @@ def main():
                     if processed_count % 100 == 0:
                         conn.commit()
                         cursor.execute("BEGIN TRANSACTION")
-                        logging.info(f"Processed {processed_count} light curves")
 
             # Commit any remaining inserts
             conn.commit()
-            logging.info(f"Completed processing. Total processed: {processed_count}")
+
 
     except KeyboardInterrupt:
-        logging.info("Keyboard interrupt detected. Progress saved in cache and partial database commits.")
+
     except Exception as e:
-        logging.error(f"Unexpected error in main: {e}", exc_info=True)
+
     finally:
         conn.close()
 
